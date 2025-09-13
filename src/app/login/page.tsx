@@ -1,20 +1,61 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import api from "@/api";
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+interface LoginError {
+  message: string;
+}
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const router = useRouter();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Limpiar error cuando el usuario empiece a escribir
+    if (error) {
+      setError(null);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    setError(null);
+    try {
+      const res = await api().login(formData.email, formData.password);
+
+      if (res) {
+        router.push("/home");
+      } else {
+        setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+      }
+    } catch (error) {
+      setError("Error de conexión. Por favor, inténtalo más tarde.");
+      console.error("Login error:", error);
+    } finally {
       setLoading(false);
-      // Simula login
-      console.log("Logged in");
-    }, 2000);
+    }
   };
 
   return (
@@ -29,37 +70,64 @@ export default function LoginPage() {
       />
 
       <div className="absolute z-10 w-full max-w-md p-8 bg-white rounded-xl shadow-2xl backdrop-blur-md">
-        {" "}
         <h2 className="text-2xl font-bold mb-6 text-center">Iniciar sesión</h2>
+
+        {/* Mostrar error si existe */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               Email
             </label>
             <input
+              id="email"
+              name="email"
               type="email"
-              className="w-full mt-1 px-0 pb-2 border-0 border-b border-gray-400 focus:border-black focus:outline-none focus:ring-0"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 px-0 pb-2 border-0 border-b border-gray-400 focus:border-black focus:outline-none focus:ring-0 disabled:opacity-50"
+              placeholder="tu@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Contraseña
             </label>
             <input
+              id="password"
+              name="password"
               type="password"
-              className="w-full mt-1 px-0 pb-2 border-0 border-b border-gray-400 focus:border-black focus:outline-none focus:ring-0"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 px-0 pb-2 border-0 border-b border-gray-400 focus:border-black focus:outline-none focus:ring-0 disabled:opacity-50"
+              placeholder="Tu contraseña"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !formData.email || !formData.password}
             className={cn(
-              "w-full mt-4 py-2 px-4 text-white font-semibold transition",
-              loading
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-black hover:bg-neutral-800"
+              "w-full mt-6 py-3 px-4 text-white font-semibold rounded-md transition-colors",
+              loading || !formData.email || !formData.password
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-black hover:bg-neutral-800 focus:ring-2 focus:ring-black focus:ring-offset-2"
             )}
           >
             {loading ? "Ingresando..." : "Ingresar"}

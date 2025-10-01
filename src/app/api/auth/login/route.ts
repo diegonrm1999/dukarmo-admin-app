@@ -16,14 +16,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    response.cookies.set("token", result.token, {
-      httpOnly: true,
-      secure: false, // 🔹 HTTP en local
-      sameSite: "lax", // 🔹 permite cross-site localhost
-      maxAge: 24 * 60 * 60,
-      path: "/",
-    });
-
     return response;
   } catch (error) {
     console.error("Login API error:", error);

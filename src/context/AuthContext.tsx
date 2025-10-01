@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/api";
-import { deleteCookie } from "@/lib/auth";
 
 interface User {
   id: string;
@@ -92,4 +91,12 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+}
+
+function deleteCookie(name: string) {
+  const isProduction = process.env.NODE_ENV === "production";
+  const domain = isProduction ? "; domain=.dukarmo.com" : "";
+  const secure = isProduction ? "; secure" : "";
+  const sameSite = isProduction ? "; samesite=none" : "; samesite=lax";
+  document.cookie = `${name}=; path=/${domain}${secure}${sameSite}; max-age=0`;
 }

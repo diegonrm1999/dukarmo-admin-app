@@ -1,7 +1,9 @@
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET
+);
 
 export interface User {
   sub: string;
@@ -51,12 +53,4 @@ export async function getServerSession(): Promise<User | null> {
     console.error("Error getting server session:", error);
     return null;
   }
-}
-
-export function deleteCookie(name: string) {
-  const isProduction = process.env.NODE_ENV === "production";
-  const domain = isProduction ? "; domain=.dukarmo.com" : "";
-  const secure = isProduction ? "; secure" : "";
-  const sameSite = isProduction ? "; samesite=none" : "; samesite=lax";
-  document.cookie = `${name}=; path=/${domain}${secure}${sameSite}; max-age=0`;
 }

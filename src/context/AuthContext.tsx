@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/api";
+import { deleteCookie } from "@/lib/auth";
 
 interface User {
   id: string;
@@ -68,10 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      deleteCookie("token");
+      localStorage.removeItem("token");
       setUser(null);
       router.push("/login");
     } catch (error) {

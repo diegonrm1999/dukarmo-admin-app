@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import api from "@/api";
+import api from "@/app/api";
+import { useAuth } from "@/context/AuthContext";
 
 interface LoginFormData {
   email: string;
@@ -18,12 +19,11 @@ interface LoginError {
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
   });
-
-  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,7 +32,6 @@ export default function LoginPage() {
       [name]: value,
     }));
 
-    // Limpiar error cuando el usuario empiece a escribir
     if (error) {
       setError(null);
     }
@@ -42,16 +41,11 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    try {
-      const res = await api().login(formData.email, formData.password);
 
-      if (res) {
-        router.push("/home");
-      } else {
-        setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
-      }
+    try {
+      await login(formData.email, formData.password);
     } catch (error) {
-      setError("Error de conexión. Por favor, inténtalo más tarde.");
+      setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
       console.error("Login error:", error);
     } finally {
       setLoading(false);

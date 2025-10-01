@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import api from "@/api";
+import api from "@/app/api";
 import { ClientFilters, ClientsResponse } from "@/lib/types/client";
 
 export function useClients(initialFilters: ClientFilters = {}) {

@@ -1,8 +1,19 @@
 import { useState } from "react";
 import { Menu, LogOut, User } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
+
+  const handleLogout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
 
   return (
     <div className="relative">
@@ -22,7 +33,10 @@ export default function UserMenu() {
             <p className="text-xs text-gray-500">diego@email.com</p>
           </div>
           <div className="border-t border-gray-100">
-            <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
               <LogOut className="w-4 h-4 mr-2" />
               Cerrar sesión
             </button>

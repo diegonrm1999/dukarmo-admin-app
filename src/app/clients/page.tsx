@@ -32,7 +32,6 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
-
       {/* Filtros */}
       <ClientsFilters
         filters={filters}

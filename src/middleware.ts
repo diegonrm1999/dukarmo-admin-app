@@ -1,23 +1,56 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get('token')?.value || request.headers.get('authorization')?.replace('Bearer ', '') || ''
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "your-secret-key-change-this-in-production"
+);
 
-  const isAuthenticated = !!token
+const publicPaths = ["/login", "/register"];
 
-  const isLoginPage = request.nextUrl.pathname === '/login'
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  if (!isAuthenticated && !isLoginPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/favicon.ico") ||
+    pathname.startsWith("/public")
+  ) {
+    return NextResponse.next();
   }
 
-  if (isAuthenticated && isLoginPage) {
-    return NextResponse.redirect(new URL('/payrolls', request.url))
+  const token = request.cookies.get("token")?.value;
+  const isPublicPath = publicPaths.includes(pathname);
+
+  if (!token && !isPublicPath) {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next()
+  if (token) {
+    try {
+      await jwtVerify(token, JWT_SECRET);
+
+      if (pathname === "/login") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+
+      if (pathname === "/") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    } catch (error) {
+      if (!isPublicPath) {
+        const response = NextResponse.redirect(new URL("/login", request.url));
+        response.cookies.set("token", "", { maxAge: 0 });
+        return response;
+      }
+    }
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/payrolls/:path*', '/login'],
-}
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};

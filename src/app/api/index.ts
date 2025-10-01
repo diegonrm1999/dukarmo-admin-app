@@ -1,49 +1,58 @@
 import { IAppConfig } from "@/config/types";
 import { OrderFilters, OrdersResponse } from "@/lib/types/order";
-import { Role, User } from "@/lib/types/user";
+import { LoginResponse, Role, User } from "@/lib/types/user";
 import { config } from "@/config/common";
 import { ClientFilters, ClientsResponse } from "@/lib/types/client";
+import { DashboardStats } from "@/lib/types/stats";
 
 class ApiClient {
   private baseURL: string;
-  private token: string;
 
   constructor(config: IAppConfig) {
     this.baseURL = config.baseURL;
-    this.token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjY4OTVkMS1hNjE3LTRlMzMtYWFjNS0zMDZlYjBmNzdiYjgiLCJlbWFpbCI6ImRpZWdvQGR1a2FybW8uY29tIiwicm9sIjoiTWFuYWdlciIsInNob3BJZCI6IjAwMzI5NzliLTczZWMtNGZhZS1hYWJiLThmZGIzYzdiODQwMCIsImlhdCI6MTc1NzcxOTc3NCwiZXhwIjoxNzU3ODA2MTc0fQ.kCikLrISZrdrSbCYSXBNrzIf9IEZ_WwKlWrhHYGbvXU";
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const token = this.token;
+  private async getAuthHeaders(requireAuth = true): Promise<HeadersInit> {
+    return {
+      "Content-Type": "application/json",
+      // No pongas Authorization aquí si vas a usar cookies HttpOnly
+    };
+  }
 
-    const url = `${this.baseURL}${endpoint}`;
-    const config: RequestInit = {
+  async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    requireAuth = true
+  ): Promise<T> {
+    const headers = await this.getAuthHeaders(requireAuth);
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      ...options,
       headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
+        ...headers,
         ...options.headers,
       },
-      ...options,
-    };
-
-    const response = await fetch(url, config);
+      credentials: "include",
+    });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      if (response.status === 401) {
+        throw new Error("Unauthorized");
+      }
+      throw new Error(`API Error: ${response.status}`);
     }
 
     return response.json();
   }
 
   async login(email: string, password: string) {
-    return this.request("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    return this.request<LoginResponse>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      },
+      false
+    );
   }
 
   async getOrders(filters: OrderFilters = {}) {
@@ -58,6 +67,10 @@ class ApiClient {
     return this.request<OrdersResponse>(
       `/orders${queryString ? `?${queryString}` : ""}`
     );
+  }
+
+  async getStats() {
+    return this.request<DashboardStats>("/dashboard/stats");
   }
 
   async getUsersByRole(role: Role) {
@@ -103,5 +116,5 @@ class ApiClient {
   }
 }
 
-const api = () => new ApiClient(config);
-export default api;
+const api = new ApiClient(config);
+export default () => api;

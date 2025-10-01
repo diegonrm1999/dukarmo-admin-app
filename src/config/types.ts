@@ -1,16 +1,12 @@
 export interface IAppConfig {
   baseURL: string;
-  accessToken: string;
 
-  init: (params: { accessToken: string }) => void;
+  init: () => void;
 
-  props: {
-    accessToken: (config: IAppConfig) => string;
-  };
 }
 
 export interface IAuthUser {
-  access_token: string;
+  token: string;
   id: string;
   role: string;
   name: string;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { OrdersResponse, OrderFilters } from "@/lib/types/order";
-import api from "@/api";
+import api from "@/app/api";
 
 export function useOrders(initialFilters: OrderFilters = {}) {
   const [data, setData] = useState<OrdersResponse | null>(null);

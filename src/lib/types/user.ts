@@ -26,3 +26,11 @@ export const ROLE_COLORS = {
   [Role.Operator]: "bg-blue-100 text-blue-800 border-blue-200",
   [Role.Manager]: "bg-orange-100 text-orange-800 border-orange-200",
 } as const;
+
+export interface LoginResponse {
+  token: string;
+  id: string;
+  name: string;
+  role: string;
+  shopId: string;
+}

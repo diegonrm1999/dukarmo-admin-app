@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@/lib/types/user";
-import api from "@/api";
-
+import api from "@/app/api";
 interface UseUsersOptions {
   strict?: boolean; // Para workers page
   autoFetch?: boolean; // Para controlar carga automática

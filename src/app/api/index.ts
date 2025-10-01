@@ -15,7 +15,6 @@ class ApiClient {
   private async getAuthHeaders(requireAuth = true): Promise<HeadersInit> {
     return {
       "Content-Type": "application/json",
-      // No pongas Authorization aquí si vas a usar cookies HttpOnly
     };
   }
 

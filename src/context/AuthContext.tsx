@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      deleteCookie("token");
+      await api().logout();
       localStorage.removeItem("token");
       setUser(null);
       router.push("/login");
@@ -91,12 +91,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
-
-function deleteCookie(name: string) {
-  const isProduction = process.env.NODE_ENV === "production";
-  const domain = isProduction ? "; domain=.dukarmo.com" : "";
-  const secure = isProduction ? "; secure" : "";
-  const sameSite = isProduction ? "; samesite=none" : "; samesite=lax";
-  document.cookie = `${name}=; path=/${domain}${secure}${sameSite}; max-age=0`;
 }

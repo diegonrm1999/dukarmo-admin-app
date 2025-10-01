@@ -54,6 +54,16 @@ class ApiClient {
     );
   }
 
+  async logout() {
+    return this.request<LoginResponse>(
+      "/auth/logout",
+      {
+        method: "POST",
+      },
+      false
+    );
+  }
+
   async getOrders(filters: OrderFilters = {}) {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {

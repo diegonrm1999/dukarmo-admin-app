@@ -74,6 +74,9 @@ export function OrdersTable({ orders, loading = false }: OrdersTableProps) {
                     Cajero
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-slate-700 whitespace-nowrap">
+                    Comisión
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 whitespace-nowrap">
                     Total
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-slate-700 whitespace-nowrap">
@@ -114,6 +117,11 @@ export function OrdersTable({ orders, loading = false }: OrdersTableProps) {
                     </td>
                     <td className="py-3 px-4 text-slate-700">
                       {order.cashier.firstName} {order.cashier.lastName}
+                    </td>
+                    <td className="py-3 px-4 text-slate-700">
+                      <div className="font-semibold text-slate-800">
+                        S/ {order.stylistEarnings.toFixed(2)}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <div>

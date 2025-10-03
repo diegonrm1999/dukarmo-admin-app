@@ -21,6 +21,7 @@ export interface Order {
   ticketNumber: string | null;
   createdAt: string;
   updatedAt: string;
+  stylistEarnings: number 
   client: {
     id: string;
     name: string;

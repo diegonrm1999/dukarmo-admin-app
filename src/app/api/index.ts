@@ -1,5 +1,5 @@
 import { IAppConfig } from "@/config/types";
-import { OrderFilters, OrdersResponse } from "@/lib/types/order";
+import { OrderDetail, OrderFilters, OrdersResponse } from "@/lib/types/order";
 import { LoginResponse, Role, User } from "@/lib/types/user";
 import { config } from "@/config/common";
 import { ClientFilters, ClientsResponse } from "@/lib/types/client";
@@ -76,6 +76,10 @@ class ApiClient {
     return this.request<OrdersResponse>(
       `/orders${queryString ? `?${queryString}` : ""}`
     );
+  }
+
+  async getOrderDetail(orderId: string) {
+    return this.request<OrderDetail>(`/orders/${orderId}`);
   }
 
   async getStats() {

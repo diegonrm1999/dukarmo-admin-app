@@ -6,9 +6,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface OrdersTableProps {
   orders: Order[];
   loading?: boolean;
+  onOrderClick?: (orderId: string) => void;
 }
 
-export function OrdersTable({ orders, loading = false }: OrdersTableProps) {
+export function OrdersTable({
+  orders,
+  loading = false,
+  onOrderClick,
+}: OrdersTableProps) {
   if (loading) {
     return (
       <Card className="border-0 shadow-lg">
@@ -94,6 +99,7 @@ export function OrdersTable({ orders, loading = false }: OrdersTableProps) {
                 {orders.map((order) => (
                   <tr
                     key={order.id}
+                    onClick={() => onOrderClick?.(order.id)}
                     className="border-t border-slate-200 hover:bg-slate-50 transition-colors"
                   >
                     <td className="py-3 px-4 font-medium text-slate-800">

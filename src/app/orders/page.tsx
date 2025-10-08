@@ -8,8 +8,12 @@ import { useOrders } from "@/hooks/use-orders";
 import { useUsers } from "@/hooks/use-users";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { OrderDetailModal } from "@/components/orders/order-detail-modal";
 
 export default function OrdersPage() {
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const {
     data: ordersData,
     loading: ordersLoading,
@@ -19,6 +23,16 @@ export default function OrdersPage() {
     goToPage,
     refetch,
   } = useOrders({ limit: 20 });
+
+  const handleRowClick = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedOrderId(null), 300);
+  };
 
   const {
     stylists,
@@ -56,7 +70,11 @@ export default function OrdersPage() {
       />
 
       {/* Tabla */}
-      <OrdersTable orders={ordersData?.data || []} loading={ordersLoading} />
+      <OrdersTable
+        orders={ordersData?.data || []}
+        loading={ordersLoading}
+        onOrderClick={handleRowClick}
+      />
 
       {/* Paginación */}
       {ordersData && ordersData.meta.totalPages > 1 && (
@@ -68,6 +86,11 @@ export default function OrdersPage() {
           onPageChange={goToPage}
         />
       )}
+      <OrderDetailModal
+        orderId={selectedOrderId}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }

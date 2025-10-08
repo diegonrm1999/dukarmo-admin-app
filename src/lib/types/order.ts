@@ -21,7 +21,7 @@ export interface Order {
   ticketNumber: string | null;
   createdAt: string;
   updatedAt: string;
-  stylistEarnings: number 
+  stylistEarnings: number;
   client: {
     id: string;
     name: string;
@@ -71,4 +71,41 @@ export interface OrderFilters {
   endDate?: string;
   clientName?: string;
   orderNumber?: string;
+}
+
+interface OrderTreatment {
+  treatment: {
+    id: string;
+    name: string;
+  };
+  price: number;
+}
+
+export interface OrderDetail {
+  id: string;
+  orderNumber: number;
+  createdAt: string;
+  totalPrice: number;
+  paidAmount: number | null;
+  paymentMethod: string | null;
+  ticketNumber: string | null;
+  status: OrderStatus;
+  treatments: OrderTreatment[];
+  cashier: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  stylist: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  client: {
+    id: string;
+    name: string;
+    dni: string;
+    phone: string | null;
+    email: string | null;
+  };
 }

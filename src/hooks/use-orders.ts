@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { OrdersResponse, OrderFilters } from "@/lib/types/order";
+import { OrdersResponse, OrderFilters, OrderDetail } from "@/lib/types/order";
 import api from "@/app/api";
 
 export function useOrders(initialFilters: OrderFilters = {}) {
@@ -52,4 +52,35 @@ export function useOrders(initialFilters: OrderFilters = {}) {
     goToPage,
     refetch: () => fetchOrders(filters),
   };
+}
+
+export function useOrderDetail(orderId: string | null) {
+  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orderId) {
+      setOrder(null);
+      return;
+    }
+
+    const fetchOrder = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await api().getOrderDetail(orderId);
+        setOrder(response);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrder();
+  }, [orderId]);
+
+  return { order, loading, error };
 }

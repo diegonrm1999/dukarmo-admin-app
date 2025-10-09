@@ -45,7 +45,7 @@ class ApiClient {
 
   async login(email: string, password: string) {
     return this.request<LoginResponse>(
-      "/auth/login",
+      "/auth/login/admin",
       {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -92,6 +92,7 @@ class ApiClient {
       [Role.Cashier]: "/users/cashiers",
       [Role.Operator]: "/users/operators",
       [Role.Manager]: "/users/managers",
+      [Role.Owner]: "/users/managers",
     };
     return this.request<User[]>(`${endpoints[role]}?strict=true`);
   }

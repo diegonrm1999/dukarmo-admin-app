@@ -13,3 +13,15 @@ export const ORDER_STATUS_COLORS = {
   [OrderStatus.Completed]: "bg-green-100 text-green-800 border-green-200",
   [OrderStatus.Cancelled]: "bg-red-100 text-red-800 border-red-200",
 } as const;
+
+export const PAYMENT_METHOD_LABELS = {
+  Cash: "Efectivo",
+  Yape: "Yape",
+  Card: "Tarjeta",
+} as const;
+
+export const PAYMENT_METHOD_COLORS = {
+  Cash: "bg-green-100 text-green-800 border-green-200",
+  Yape: "bg-purple-100 text-purple-800 border-purple-200",
+  Card: "bg-indigo-100 text-indigo-800 border-indigo-200",
+} as const;

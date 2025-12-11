@@ -9,6 +9,7 @@ import { useUsers } from "@/hooks/use-users";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { OrderDetailModal } from "@/components/orders/order-detail-modal";
+import { OrderSummary } from "@/components/orders/order-summary";
 
 export default function OrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -66,6 +67,13 @@ export default function OrdersPage() {
         stylists={stylists}
         cashiers={cashiers}
         operators={operators}
+        loading={isLoading}
+      />
+
+      {/* Resumen de órdenes */}
+      <OrderSummary
+        totalAmount={ordersData?.meta.totalAmount || 0}
+        totalOrders={ordersData?.meta.total || 0}
         loading={isLoading}
       />
 

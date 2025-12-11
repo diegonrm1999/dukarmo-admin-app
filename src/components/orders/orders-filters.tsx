@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter, Calendar, RotateCcw } from "lucide-react";
-import { OrderFilters, OrderStatus } from "@/lib/types/order";
+import { OrderFilters, OrderStatus, PaymentMethod } from "@/lib/types/order";
 import { User } from "@/lib/types/user";
-import { ORDER_STATUS_LABELS } from "@/lib/utils/constants";
+import {
+  ORDER_STATUS_LABELS,
+  PAYMENT_METHOD_LABELS,
+} from "@/lib/utils/constants";
+import {
+  formatDateToInput,
+  getDefaultEndDate,
+  getDefaultStartDate,
+} from "@/lib/utils";
 
 interface OrdersFiltersProps {
   filters: OrderFilters;
@@ -36,6 +44,98 @@ export function OrdersFilters({
     orderNumber: filters.orderNumber || "",
   });
 
+  useEffect(() => {
+    if (!filters.startDate && !filters.endDate) {
+      onFiltersChange({
+        startDate: getDefaultStartDate(),
+        endDate: getDefaultEndDate(),
+      });
+    }
+  }, []);
+
+  const handleStartDateChange = (value: string) => {
+    if (!value) {
+      onFiltersChange({ startDate: undefined });
+      return;
+    }
+
+    const startDate = new Date(value);
+    const endDate = filters.endDate ? new Date(filters.endDate) : null;
+
+    // Validar que startDate no sea mayor que endDate
+    if (endDate && startDate > endDate) {
+      // Ajustar endDate a 30 días después del nuevo startDate
+      const newEndDate = new Date(startDate);
+      newEndDate.setDate(newEndDate.getDate() + 30);
+
+      onFiltersChange({
+        startDate: value,
+        endDate: formatDateToInput(newEndDate),
+      });
+      return;
+    }
+
+    // Validar que el rango no exceda 6 meses
+    if (endDate) {
+      const monthsDiff =
+        (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+        (endDate.getMonth() - startDate.getMonth());
+
+      if (monthsDiff > 6) {
+        // Ajustar endDate a 6 meses después del startDate
+        const adjustedEndDate = new Date(startDate);
+        adjustedEndDate.setMonth(adjustedEndDate.getMonth() + 6);
+
+        onFiltersChange({
+          startDate: value,
+          endDate: formatDateToInput(adjustedEndDate),
+        });
+        return;
+      }
+    }
+
+    onFiltersChange({ startDate: value });
+  };
+
+  const handleEndDateChange = (value: string) => {
+    if (!value) {
+      onFiltersChange({ endDate: undefined });
+      return;
+    }
+
+    const endDate = new Date(value);
+    const startDate = filters.startDate ? new Date(filters.startDate) : null;
+
+    if (startDate && endDate < startDate) {
+      const newStartDate = new Date(endDate);
+      newStartDate.setDate(newStartDate.getDate() - 30);
+
+      onFiltersChange({
+        endDate: value,
+        startDate: formatDateToInput(newStartDate),
+      });
+      return;
+    }
+
+    if (startDate) {
+      const monthsDiff =
+        (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+        (endDate.getMonth() - startDate.getMonth());
+
+      if (monthsDiff > 6) {
+        const adjustedStartDate = new Date(endDate);
+        adjustedStartDate.setMonth(adjustedStartDate.getMonth() - 6);
+
+        onFiltersChange({
+          endDate: value,
+          startDate: formatDateToInput(adjustedStartDate),
+        });
+        return;
+      }
+    }
+    onFiltersChange({ endDate: value });
+  };
+
   const handleLocalChange = (key: keyof typeof localFilters, value: string) => {
     setLocalFilters((prev) => ({ ...prev, [key]: value }));
   };
@@ -49,10 +149,15 @@ export function OrdersFilters({
       operatorId: undefined,
       cashierId: undefined,
       status: undefined,
-      startDate: undefined,
-      endDate: undefined,
+      paymentMethod: undefined,
+      startDate: getDefaultStartDate(),
+      endDate: getDefaultEndDate(),
     });
   };
+
+  const isDefaultDateRange =
+    filters.startDate === getDefaultStartDate() &&
+    filters.endDate === getDefaultEndDate();
 
   const hasActiveFilters =
     (filters.clientName && filters.clientName !== "") ||
@@ -61,8 +166,8 @@ export function OrdersFilters({
     filters.operatorId ||
     filters.cashierId ||
     filters.status ||
-    filters.startDate ||
-    filters.endDate;
+    filters.paymentMethod ||
+    !isDefaultDateRange;
 
   return (
     <Card className="border-0 shadow-lg">
@@ -196,6 +301,37 @@ export function OrdersFilters({
             </Select>
           </div>
 
+          {/* Metodos de Pago */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm text-slate-600 mb-1">
+              Metodo de pago
+            </label>
+            <Select
+              value={filters.paymentMethod || "all"}
+              onValueChange={(value) =>
+                onFiltersChange({
+                  paymentMethod:
+                    value === "all" ? undefined : (value as PaymentMethod),
+                })
+              }
+              disabled={loading}
+            >
+              <SelectTrigger className="h-10 border-slate-300 focus:border-purple-500">
+                <SelectValue placeholder="Todos los metodos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {Object.entries(PAYMENT_METHOD_LABELS).map(
+                  ([paymentMethod, label]) => (
+                    <SelectItem key={paymentMethod} value={paymentMethod}>
+                      {label}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Fechas */}
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm text-slate-600 mb-1">
@@ -206,9 +342,8 @@ export function OrdersFilters({
               <Input
                 type="date"
                 value={filters.startDate || ""}
-                onChange={(e) =>
-                  onFiltersChange({ startDate: e.target.value || undefined })
-                }
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                max={filters.endDate || undefined}
                 className="h-10 pl-9 border-slate-300 focus:border-purple-500 w-full"
                 disabled={loading}
               />
@@ -224,9 +359,9 @@ export function OrdersFilters({
               <Input
                 type="date"
                 value={filters.endDate || ""}
-                onChange={(e) =>
-                  onFiltersChange({ endDate: e.target.value || undefined })
-                }
+                onChange={(e) => handleEndDateChange(e.target.value)}
+                min={filters.startDate || undefined}
+                max={formatDateToInput(new Date())}
                 className="h-10 pl-9 border-slate-300 focus:border-purple-500 w-full"
                 disabled={loading}
               />

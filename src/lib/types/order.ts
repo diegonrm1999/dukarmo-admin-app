@@ -54,6 +54,7 @@ export interface OrdersResponse {
     page: number;
     limit: number;
     total: number;
+    totalAmount: number;
     totalPages: number;
     hasNext: boolean;
     hasPrev: boolean;
@@ -71,6 +72,7 @@ export interface OrderFilters {
   endDate?: string;
   clientName?: string;
   orderNumber?: string;
+  paymentMethod?: PaymentMethod;
 }
 
 interface OrderTreatment {
